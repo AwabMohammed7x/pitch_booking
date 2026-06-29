@@ -1,0 +1,47 @@
+{% extends 'base.html' %} {% block title %}إنشاء حساب جديد{% endblock %}
+
+{% block content %}
+<div class="signup-container" style="max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px;">
+    
+    <h2 style="text-align: center;">إنشاء حساب جديد</h2>
+
+    {% if messages %}
+        <div class="messages" style="color: red; margin-bottom: 15px; text-align: center;">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+        {{ form.errors }}
+    <form action="?next={{request.GET.next}}" method="POST">
+        {% csrf_token %}
+        
+            <div style="color: red; margin-bottom: 15px;">
+            </div>
+       
+        <div style="margin-bottom: 15px;">
+        <label for="id_username" style="display: block; margin-bottom: 5px;">اسم المستخدم:</label>
+            {{ form.username }}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+        <label for="id_email" style="display: block; margin-bottom: 5px;">البريد الإلكتروني:</label>
+            {{ form.email }}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+        <label for="id_password1" style="display: block; margin-bottom: 5px;">كلمة المرور:</label>
+            {{ form.password1 }}
+        </div>
+
+        <div style="margin-bottom: 15px;">
+        <label for="id_password2" style="display: block; margin-bottom: 5px;">تأكيد كلمة المرور:</label>
+            {{ form.password2 }}
+        </div>
+
+        <button type="submit" style="width: 100%; padding: 10px; background-color: #3182ce; color: white; border: none; cursor: pointer;">
+            تسجيل الحساب
+        </button>
+    </form>
+</div>
+{% endblock %}
