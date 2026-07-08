@@ -4,11 +4,19 @@ from .views import PaymentCreateView, PitchViewSet, BookingViewSet,PaymentWebhoo
 router=DefaultRouter()
 router.register('pitch/',PitchViewSet,basename='pitch')
 router.register('book/',BookingViewSet,basename='booking')
-router.register('payment/',PaymentCreateView,basename='payment')
-router.register('webhook/',PaymentWebhookView,basename='webhook')
 
+urlpatterns = [
+    path("", include(router.urls)),
 
-urlpatterns=[
-    path('',include(router.urls))
-    
+    path(
+        "payments/create/",
+        PaymentCreateView.as_view(),
+        name="payment-create",
+    ),
+
+    path(
+        "payments/webhook/",
+        PaymentWebhookView.as_view(),
+        name="payment-webhook",
+    ),
 ]
