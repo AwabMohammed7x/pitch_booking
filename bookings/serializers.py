@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone  # 👈 مهم جداً عشان نجيب الزمن الحالي صح
-from .models import Pitch, Booking
+from .models import Pitch, Booking, Payment
 
 class PitchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -65,3 +65,11 @@ class BookingSerializer(serializers.ModelSerializer):
         
         # أخيراً، بنحفظ الحجز في الداتا بيز
         return super().create(validated_data)
+    
+class PaymentSerializer(serializers.ModelSerializer):
+    booking = serializers.ReadOnlyField(source='booking.id')  # عرض بيانات الحجز المرتبط بالدفع
+
+    class Meta:
+        model = Payment
+        fields = ['id', 'booking', 'amount', 'created_at', 'status', 'transaction_id']
+        read_only_fields = ['created_at', 'status', 'transaction_id']  # الحقول دي للقراءة فقط

@@ -36,3 +36,19 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"حجز {self.user.username} لـ {self.pitch.name}"
+    
+class Payment(models.Model):
+    choices = (
+        ('Pending', 'قيد الانتظار'),
+        ('Completed', 'مكتمل'),
+        ('Failed', 'فشل'),
+    )
+    booking = models.OneToOneField(Booking, on_delete=models.CASCADE, related_name='payment')
+    amount = models.DecimalField(max_digits=8, decimal_places=2, verbose_name="المبلغ")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاريخ الدفع")
+    status = models.CharField(max_length=20, choices=choices, default='Pending', verbose_name="حالة الدفع")
+    transaction_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="رقم المعاملة")
+    
+
+    def __str__(self):
+        return f"دفع {self.amount} لـ {self.booking}"
