@@ -1,6 +1,23 @@
 from rest_framework import viewsets, permissions
 from .models import Payment, Pitch, Booking
 from .serializers import PaymentSerializer, PitchSerializer, BookingSerializer
+from django.views import View
+from django.http import HttpResponse
+from django.conf import settings
+from rest_framework import permissions, status
+from rest_framework.generics import CreateAPIView
+from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework import status, permissions
+from rest_framework.generics import CreateAPIView
+from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from .models import Payment
+from .serializers import PaymentSerializer
+from .models import Payment
+from .serializers import PaymentSerializer
+import stripe
+
 
 # 1. فيو الملاعب: عرض فقط (Read-Only)
 class PitchViewSet(viewsets.ReadOnlyModelViewSet):
@@ -20,29 +37,10 @@ class BookingViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
          serializer.save(user=self.request.user)
 
-from rest_framework import status, permissions
-from rest_framework.generics import CreateAPIView
-from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from .models import Payment
-from .serializers import PaymentSerializer
 
 
-import stripe
-
-from django.conf import settings
-
-from rest_framework import permissions, status
-from rest_framework.generics import CreateAPIView
-from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, ValidationError
-
-from .models import Payment
-from .serializers import PaymentSerializer
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
-
-
 class PaymentCreateView(CreateAPIView):
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -65,6 +63,8 @@ class PaymentCreateView(CreateAPIView):
             raise ValidationError(
                 "This booking has already been paid."
             )
+        if amount <= 0:
+             raise ValidationError("Invalid booking amount.")
 
         # جلب السعر الحقيقي من قاعدة البيانات
         amount = booking.total_price
@@ -73,7 +73,7 @@ class PaymentCreateView(CreateAPIView):
         payment = Payment.objects.create(
             booking=booking,
             amount=amount,
-            status="pending"
+            status="Pending"
         )
 
         try:
@@ -103,7 +103,7 @@ class PaymentCreateView(CreateAPIView):
 
         except stripe.error.StripeError as e:
 
-            payment.status = "failed"
+            payment.status = "Failed"
             payment.save()
 
             return Response(
@@ -112,3 +112,60 @@ class PaymentCreateView(CreateAPIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
+from django.views import View
+from django.http import HttpResponse
+from django.conf import settings
+
+import stripe
+
+from .models import Payment
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+class PaymentWebhookView(View):
+
+    def post(self, request, *args, **kwargs):
+
+        payload = request.body
+        sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
+
+        try:
+            event = stripe.Webhook.construct_event(
+                payload=payload,
+                sig_header=sig_header,
+                secret=settings.STRIPE_WEBHOOK_SECRET,
+            )
+
+        except ValueError:
+            return HttpResponse(status=400)
+
+        except stripe.error.SignatureVerificationError:
+            return HttpResponse(status=400)
+
+        payment_intent = event["data"]["object"]
+        payment_id = payment_intent["metadata"]["payment_id"]
+
+        try:
+            payment = Payment.objects.get(id=payment_id)
+
+        except Payment.DoesNotExist:
+            return HttpResponse(status=404)
+
+        if event["type"] == "payment_intent.succeeded":
+
+            payment.status = "Completed"
+            payment.transaction_id = payment_intent["id"]
+            payment.save()
+
+            booking = payment.booking
+            booking.status = "Confirmed"
+            booking.save()
+
+        elif event["type"] == "payment_intent.payment_failed":
+
+            payment.status = "Failed"
+            payment.save()
+
+        return HttpResponse(status=200)
