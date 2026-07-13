@@ -1,21 +1,12 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions,status
 from .models import Payment, Pitch, Booking
 from .serializers import PaymentSerializer, PitchSerializer, BookingSerializer
 from django.views import View
 from django.http import HttpResponse
 from django.conf import settings
-from rest_framework import permissions, status
 from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework import status, permissions
-from rest_framework.generics import CreateAPIView
-from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from .models import Payment
-from .serializers import PaymentSerializer
-from .models import Payment
-from .serializers import PaymentSerializer
 import stripe
 
 
@@ -113,17 +104,8 @@ class PaymentCreateView(CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
-from django.views import View
-from django.http import HttpResponse
-from django.conf import settings
-
-import stripe
-
-from .models import Payment
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
-
-
 class PaymentWebhookView(View):
 
     def post(self, request, *args, **kwargs):
@@ -167,5 +149,9 @@ class PaymentWebhookView(View):
 
             payment.status = "Failed"
             payment.save()
+
+            booking = payment.booking
+            booking.status = "Canceled"
+            booking.save()
 
         return HttpResponse(status=200)
