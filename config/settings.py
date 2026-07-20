@@ -22,9 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1aujv7$t^fkxw6+_46_b4jfve7@*-fl*fx-g@arf3^pk32ye!e'
-
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "django-insecure-ضع-هنا-المفتاح-القديم"
+)
 DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'djoser',
     'rest_framework_simplejwt',
     'accounts',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -146,6 +148,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    "DEFAULT_SCHEMA_CLASS":
+        "drf_spectacular.openapi.AutoSchema",
 }
 
 from datetime import timedelta
@@ -177,3 +181,9 @@ import os
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Pitch Booking API",
+    "DESCRIPTION": "Football Pitch Booking System",
+    "VERSION": "1.0.0",
+}

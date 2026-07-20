@@ -1,6 +1,10 @@
 from django.urls import path ,include
 from rest_framework.routers import DefaultRouter
 from .views import PaymentCreateView, PitchViewSet, BookingViewSet,PaymentWebhookView
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+)
 router=DefaultRouter()
 router.register('pitch/',PitchViewSet,basename='pitch')
 router.register('book/',BookingViewSet,basename='booking')
@@ -18,5 +22,19 @@ urlpatterns = [
         "payments/webhook/",
         PaymentWebhookView.as_view(),
         name="payment-webhook",
+    ),
+
+    path(
+        "api/schema/",
+        SpectacularAPIView.as_view(),
+        name="schema",
+    ),
+
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(
+            url_name="schema"
+        ),
+        name="swagger-ui",
     ),
 ]
