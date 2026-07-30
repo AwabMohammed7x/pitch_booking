@@ -6,8 +6,8 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 router=DefaultRouter()
-router.register('pitch/',PitchViewSet,basename='pitch')
-router.register('book/',BookingViewSet,basename='booking')
+router.register('pitch',PitchViewSet,basename='pitch')
+router.register('book',BookingViewSet,basename='booking')
 
 urlpatterns = [
     path("", include(router.urls)),

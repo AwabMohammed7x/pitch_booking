@@ -54,15 +54,15 @@ class PaymentCreateView(CreateAPIView):
             raise ValidationError(
                 "This booking has already been paid."
             )
+        amount = booking.total_price
         if amount <= 0:
              raise ValidationError("Invalid booking amount.")
 
         # جلب السعر الحقيقي من قاعدة البيانات
-        amount = booking.total_price
 
         # إنشاء سجل الدفع
         payment = Payment.objects.create(
-            booking=booking,
+            booking=booking, 
             amount=amount,
             status="Pending"
         )

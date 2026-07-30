@@ -67,9 +67,11 @@ class BookingSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 class PaymentSerializer(serializers.ModelSerializer):
-    booking = serializers.ReadOnlyField(source='booking.id')  # عرض بيانات الحجز المرتبط بالدفع
+    booking = serializers.PrimaryKeyRelatedField(
+        queryset=Booking.objects.all()
+    )
 
     class Meta:
         model = Payment
-        fields = ['id', 'booking', 'amount', 'created_at', 'status', 'transaction_id']
-        read_only_fields = ['created_at', 'status', 'transaction_id']  # الحقول دي للقراءة فقط 
+        fields = ['id', 'booking', 'created_at', 'status', 'transaction_id']
+        read_only_fields = ['created_at', 'status', 'transaction_id','amount']  # الحقول دي للقراءة فقط 
