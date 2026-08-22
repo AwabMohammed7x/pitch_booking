@@ -85,7 +85,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgresql://postgres:awabmo132@@localhost:5432/pitch_booking",
         conn_max_age=600,
     )
 }
